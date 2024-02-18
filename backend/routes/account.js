@@ -3,6 +3,7 @@ const accountRouter = express.Router();
 const zod = require ('zod');
 const { Account, User } = require ('../database/db');
 const { authMiddleware } = require('../middleware/auth');
+const mongoose = require ('mongoose');
 
 const createAccountSchema = zod.object({
     userId: zod.string(),
@@ -55,6 +56,8 @@ accountRouter.post('/pay', authMiddleware, async(req, res) => {
                 res.status(400).json({ message: 'Payee not found, transaction failed' });
             }
             else {
+                const session = await mongoose.startSession();
+                session.startTransaction();
                 const payeeBalance = parseFloat(payeeAccount.balance);
                 const payerBalance = parseFloat(payerAccount.balance);
                 const amountToTransfer = parseFloat(req.body.amount);
@@ -77,6 +80,7 @@ accountRouter.post('/pay', authMiddleware, async(req, res) => {
                     )
                     res.status(200).json( {message: 'Transfer successfull.'});
                 }
+                await session.commitTransaction();
             }
         }
         else {
