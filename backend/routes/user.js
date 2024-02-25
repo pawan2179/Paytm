@@ -47,8 +47,9 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
-userRouter.get('/signin', authMiddleware, async (req, res) => {
+userRouter.post('/signin', async (req, res) => {
   try {
+    console.log('signin log -> ', req.body);
     const { success } = signInSchema.safeParse(req.body);
     if(success) {
       const user = await User.findOne({
